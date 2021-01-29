@@ -123,6 +123,7 @@ namespace KeycloakTry2
             var clientResource = resourceAccess[context.Principal.FindFirstValue("aud")];
             var clientRoles = clientResource["roles"];
             var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
+
             if (claimsIdentity == null)
             {
                 return;

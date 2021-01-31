@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using KeycloakAdapter;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
@@ -14,6 +15,12 @@ namespace KeycloakTry2.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
+        KeycloakManager accessKeycloakData;
+        public UserController(IConfiguration configutation)
+        {
+            accessKeycloakData = new KeycloakManager(configutation);
+        }
+
         // GET: api/<UserController>
         [HttpGet]
         public IEnumerable<string> Get()
@@ -31,7 +38,7 @@ namespace KeycloakTry2.Controllers
         // POST api/<UserController>
         [HttpPost]
         [Authorize(Roles = "administrator")]
-        public async Task<IActionResult> Post()
+        public Task<IActionResult> Post()
         {
             //var userToAccess = new AccessUser
             //{
@@ -55,34 +62,36 @@ namespace KeycloakTry2.Controllers
 
             string newUser = "{ \"firstName\":\"Mallor\",\"lastName\":\"Kargopolov\", \"email\":\"test2@test.com\", \"enabled\":\"true\", \"username\":\"Mallor\"}";
 
-            StatusCodeResult statusCode = default;
+            //StatusCodeResult statusCode = default;
 
-            string url = "http://localhost:8080/auth/admin/realms/master/users";
-            string answer = string.Empty;
+            //string url = "http://localhost:8080/auth/admin/realms/master/users";
+            //string answer = string.Empty;
             StringContent httpConent = new StringContent(newUser, Encoding.UTF8, "application/json");
             string jwt = Request.Headers["Authorization"];
 
+            var t = accessKeycloakData.TryCreateUser(jwt, httpConent);
 
-            try
-            {
-                using (var httpClient = new HttpClient())
-                {
-                    httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
-                    HttpResponseMessage response = await httpClient.PostAsync(url, httpConent);
-                    statusCode = new StatusCodeResult((int)response.StatusCode);
 
-                    answer = await response.Content.ReadAsStringAsync();
+            //try
+            //{
+            //    using (var httpClient = new HttpClient())
+            //    {
+            //        httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
+            //        HttpResponseMessage response = await httpClient.PostAsync(url, httpConent);
+            //        statusCode = new StatusCodeResult((int)response.StatusCode);
 
-                    //OpenIdConnect openIdConnect = JsonConvert.DeserializeObject<OpenIdConnect>(answer);
+            //        answer = await response.Content.ReadAsStringAsync();
 
-                    //if (openIdConnect.HasError) answer = openIdConnect.error_description;
+            //        //OpenIdConnect openIdConnect = JsonConvert.DeserializeObject<OpenIdConnect>(answer);
 
-                }
-            }
-            catch (Exception exp)
-            { }
+            //        //if (openIdConnect.HasError) answer = openIdConnect.error_description;
 
-            return statusCode;
+            //    }
+            //}
+            //catch (Exception exp)
+            //{ }
+
+            return t;
         }
 
         // PUT api/<UserController>/5

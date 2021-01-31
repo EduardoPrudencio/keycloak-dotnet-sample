@@ -12,9 +12,11 @@
         public string session_state { get; set; }
         public string scope { get; set; }
         public string error { get; set; }
+        public string errorMessage { get; set; }
+
         public string error_description { get; set; }
 
-        public bool HasError { get => !string.IsNullOrEmpty(error); }
+        public bool HasError { get => !string.IsNullOrEmpty(error) || !string.IsNullOrEmpty(errorMessage); }
 
         public string[] roles { get; set; }
 

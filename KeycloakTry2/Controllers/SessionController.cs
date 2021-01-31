@@ -34,7 +34,6 @@ namespace KeycloakTry2.Controllers
 
             else answer = JsonConvert.SerializeObject(openIdConnect);
 
-
             return Task.FromResult(answer);
         }
     }

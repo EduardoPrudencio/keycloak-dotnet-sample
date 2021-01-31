@@ -29,6 +29,7 @@ namespace KeycloakTry2.Controllers
             string answer = string.Empty;
             string url = _configutation["Oidc:SessionStartUrl"];
             string clientId = _configutation["Oidc:ClientId"];
+            string clientSecret = _configutation["Oidc:ClientSecret"];
 
 
             IEnumerable<KeyValuePair<string, string>> postData = new List<KeyValuePair<string, string>>()
@@ -37,6 +38,7 @@ namespace KeycloakTry2.Controllers
                 new KeyValuePair<string, string>("password", password),
                 new KeyValuePair<string, string>("client_id", clientId),
                 new KeyValuePair<string, string>("grant_type", "password"),
+                new KeyValuePair<string, string>("client_secret", clientSecret),
             };
 
             using (var httpClient = new HttpClient())

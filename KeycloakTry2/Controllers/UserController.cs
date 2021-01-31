@@ -1,7 +1,5 @@
-﻿using KeycloakTry2.Model;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -75,9 +73,9 @@ namespace KeycloakTry2.Controllers
 
                     answer = await response.Content.ReadAsStringAsync();
 
-                    OpenIdConnect openIdConnect = JsonConvert.DeserializeObject<OpenIdConnect>(answer);
+                    //OpenIdConnect openIdConnect = JsonConvert.DeserializeObject<OpenIdConnect>(answer);
 
-                    if (openIdConnect.HasError) answer = openIdConnect.error_description;
+                    //if (openIdConnect.HasError) answer = openIdConnect.error_description;
 
                 }
             }

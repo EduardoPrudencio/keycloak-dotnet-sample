@@ -1,4 +1,4 @@
-﻿namespace KeycloakTry2.Model
+﻿namespace KeycloakAdapter
 {
     public class OpenIdConnect
     {

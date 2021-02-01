@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
-using System.Web.Http.Results;
 
 namespace KeycloakAdapter
 {
@@ -60,9 +59,9 @@ namespace KeycloakAdapter
             }
         }
 
-        public async Task<IActionResult> TryCreateUser(string jwt, StringContent httpConent)
+        public async Task<int> TryCreateUser(string jwt, StringContent httpConent)
         {
-            StatusCodeResult statusCode = default;
+            int statusCode = default;
 
             try
             {
@@ -70,25 +69,43 @@ namespace KeycloakAdapter
                 {
                     httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
                     HttpResponseMessage response = await httpClient.PostAsync(_createUserUrl, httpConent);
-                    statusCode = new StatusCodeResult(response.StatusCode, new HttpRequestMessage());
+                    statusCode = (int)response.StatusCode;
 
                     string answer = await response.Content.ReadAsStringAsync();
 
                     OpenIdConnect openIdConnect = JsonConvert.DeserializeObject<OpenIdConnect>(answer);
 
-                    if (openIdConnect.HasError) answer = openIdConnect.error_description ?? openIdConnect.errorMessage;
+                    if (openIdConnect != null && openIdConnect.HasError) answer = openIdConnect.error_description ?? openIdConnect.errorMessage;
 
                 }
             }
             catch (Exception exp)
             { }
 
-            return (IActionResult)statusCode;
+            return statusCode;
         }
 
         public OpenIdConnect GetAccessResult(string answer)
         {
             return JsonConvert.DeserializeObject<OpenIdConnect>(answer);
+        }
+
+        public string CreateUserData(User user)
+        {
+            StringBuilder userJson = new StringBuilder();
+            userJson.Append("{ \"firstName\":\"");
+            userJson.Append(user.firstName);
+            userJson.Append("\",\"lastName\":\"");
+            userJson.Append(user.lastName);
+            userJson.Append("\",\"email\":\"");
+            userJson.Append(user.email);
+            userJson.Append("\",\"enabled\":\"true\", \"emailVerified\":\"true\",\"username\":\"");
+            userJson.Append(user.username);
+            userJson.Append("\",\"credentials\": [{ \"type\": \"password\",\"value\":\"");
+            userJson.Append(user.password);
+            userJson.Append("\",\"temporary\": false}]}");
+
+            return userJson.ToString();
         }
 
     }

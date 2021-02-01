@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -38,61 +37,15 @@ namespace KeycloakTry2.Controllers
         // POST api/<UserController>
         [HttpPost]
         [Authorize(Roles = "administrator")]
-        public Task<IActionResult> Post()
+        public IActionResult Post([FromBody] User accessUser)
         {
-            //var userToAccess = new AccessUser
-            //{
-            //    createdTimestamp = ((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds(),
-            //    username = "Aguiar",
-            //    enabled = true,
-            //    totp = true,
-            //    emailVerified = true,
-            //    firstName = "Aguiar",
-            //    lastName = "Silva",
-            //    email = "qqc@teste.com",
-            //    disableableCredentialTypes = new string[] { },
-            //    requiredActions = new string[] { },
-            //    notBefore = 0,
-            //    access = new Access { manageGroupMembership = true, view = true, mapRoles = true, impersonate = true, manage = true },
-            //    realmRoles = new string[] { "master" }
-            //};
-
-            //string userSerialized = JsonConvert.SerializeObject(userToAccess);
-
-
-            //string newUser = "{ \"firstName\":\"Mallor2\",\"lastName\":\"Kargopolov\", \"email\":\"test3@test.com\", \"enabled\":\"true\", \"username\":\"Mallor\", \"clientRoles\":[\"administrator\"]}";
-            string newUser = "{ \"id\":\"569A9845-738B-4CF9-87D7-35ECCFA8940C\", \"firstName\":\"Mallor\",\"lastName\":\"Kargopolov\", \"email\":\"test3@test.com\", \"enabled\":\"true\", \"emailVerified\":\"true\",\"username\":\"Naruto3\", \"credentials\": [{ \"type\": \"password\",\"value\":\"admin\",\"temporary\": false}]}";
-
-            //StatusCodeResult statusCode = default;
-
-            //string url = "http://localhost:8080/auth/admin/realms/master/users";
-            //string answer = string.Empty;
+            StatusCodeResult result = default;
+            string newUser = accessKeycloakData.CreateUserData(accessUser);
             StringContent httpConent = new StringContent(newUser, Encoding.UTF8, "application/json");
             string jwt = Request.Headers["Authorization"];
-
-            var t = accessKeycloakData.TryCreateUser(jwt, httpConent);
-
-
-            //try
-            //{
-            //    using (var httpClient = new HttpClient())
-            //    {
-            //        httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
-            //        HttpResponseMessage response = await httpClient.PostAsync(url, httpConent);
-            //        statusCode = new StatusCodeResult((int)response.StatusCode);
-
-            //        answer = await response.Content.ReadAsStringAsync();
-
-            //        //OpenIdConnect openIdConnect = JsonConvert.DeserializeObject<OpenIdConnect>(answer);
-
-            //        //if (openIdConnect.HasError) answer = openIdConnect.error_description;
-
-            //    }
-            //}
-            //catch (Exception exp)
-            //{ }
-
-            return t;
+            int statusCodeResult = accessKeycloakData.TryCreateUser(jwt, httpConent).Result;
+            result = new StatusCodeResult(statusCodeResult);
+            return result;
         }
 
         // PUT api/<UserController>/5

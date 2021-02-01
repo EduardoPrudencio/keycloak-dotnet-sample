@@ -60,7 +60,8 @@ namespace KeycloakTry2.Controllers
             //string userSerialized = JsonConvert.SerializeObject(userToAccess);
 
 
-            string newUser = "{ \"firstName\":\"Mallor\",\"lastName\":\"Kargopolov\", \"email\":\"test2@test.com\", \"enabled\":\"true\", \"username\":\"Mallor\"}";
+            //string newUser = "{ \"firstName\":\"Mallor2\",\"lastName\":\"Kargopolov\", \"email\":\"test3@test.com\", \"enabled\":\"true\", \"username\":\"Mallor\", \"clientRoles\":[\"administrator\"]}";
+            string newUser = "{ \"id\":\"569A9845-738B-4CF9-87D7-35ECCFA8940C\", \"firstName\":\"Mallor\",\"lastName\":\"Kargopolov\", \"email\":\"test3@test.com\", \"enabled\":\"true\", \"emailVerified\":\"true\",\"username\":\"Naruto3\", \"credentials\": [{ \"type\": \"password\",\"value\":\"admin\",\"temporary\": false}]}";
 
             //StatusCodeResult statusCode = default;
 

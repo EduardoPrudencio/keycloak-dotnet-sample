@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -83,6 +84,38 @@ namespace KeycloakAdapter
             { }
 
             return statusCode;
+        }
+
+        public async Task<HttpResponseObject<User>> FindUserByEmail(string jwt, string email)
+        {
+            HttpResponseObject<User> responseSearch = new HttpResponseObject<User>();
+
+            List<User> userResponse;
+
+            try
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    string url = $"http://localhost:8080/auth/admin/realms/master/users?email={email}";
+
+                    httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
+                    HttpResponseMessage response = await httpClient.GetAsync(_createUserUrl);
+
+                    int statusCode = (int)response.StatusCode;
+
+                    string answer = await response.Content.ReadAsStringAsync();
+
+                    userResponse = JsonConvert.DeserializeObject<List<User>>(answer);
+
+                    User finalResponse = (userResponse.Any()) ? userResponse.FirstOrDefault(u => !string.IsNullOrEmpty(u.email)) : null;
+
+                    responseSearch.Create(statusCode, finalResponse);
+                }
+            }
+            catch (Exception exp)
+            { }
+
+            return responseSearch;
         }
 
         public OpenIdConnect GetAccessResult(string answer)

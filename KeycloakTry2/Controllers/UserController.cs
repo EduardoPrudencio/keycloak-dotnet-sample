@@ -20,41 +20,48 @@ namespace KeycloakTry2.Controllers
             accessKeycloakData = new KeycloakManager(configutation);
         }
 
-        // GET: api/<UserController>
         [HttpGet]
         public IEnumerable<string> Get()
         {
             return new string[] { "value1", "value2" };
         }
 
-        // GET api/<UserController>/5
         [HttpGet("{id}")]
         public string Get(int id)
         {
             return "value";
         }
 
-        // POST api/<UserController>
         [HttpPost]
         [Authorize(Roles = "administrator")]
         public IActionResult Post([FromBody] User accessUser)
         {
-            StatusCodeResult result = default;
+            IActionResult result = default;
             string newUser = accessKeycloakData.CreateUserData(accessUser);
             StringContent httpConent = new StringContent(newUser, Encoding.UTF8, "application/json");
             string jwt = Request.Headers["Authorization"];
+
             int statusCodeResult = accessKeycloakData.TryCreateUser(jwt, httpConent).Result;
-            result = new StatusCodeResult(statusCodeResult);
+
+            if (statusCodeResult == 201)
+            {
+                HttpResponseObject<User> userCreated = accessKeycloakData.FindUserByEmail(jwt, accessUser.email).Result;
+                result = Created(" ", userCreated.Object);
+            }
+            else
+            {
+                result = new StatusCodeResult(statusCodeResult);
+            }
+
+
             return result;
         }
 
-        // PUT api/<UserController>/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {
         }
 
-        // DELETE api/<UserController>/5
         [HttpDelete("{id}")]
         public void Delete(int id)
         {

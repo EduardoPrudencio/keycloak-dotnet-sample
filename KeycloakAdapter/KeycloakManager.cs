@@ -11,17 +11,35 @@ namespace KeycloakAdapter
 {
     public class KeycloakManager
     {
+        private string _baseAddress;
+        private string _urlAddRoleToUser;
         private string _initialAccessAddress;
         private string _clientId;
         private string _clientSecret;
         private string _createUserUrl;
+        private Role _administratorRole;
+        private Role[] _roles;
 
         public KeycloakManager(IConfiguration configutation)
         {
+            _baseAddress = configutation["keycloakData:UrlBase"];
+            _urlAddRoleToUser = _baseAddress + configutation["keycloakData:UrlAddRoleToUser"];
+
             _initialAccessAddress = configutation["keycloakData:SessionStartUrl"];
             _clientId = configutation["keycloakData:ClientId"];
             _clientSecret = configutation["keycloakData:ClientSecret"];
             _createUserUrl = configutation["keycloakData:CreateUserUrl"];
+
+            _administratorRole = new Role
+            {
+                id = configutation["keycloakData:AdministratorRole:Id"],
+                name = configutation["keycloakData:AdministratorRole:Name"],
+                containerId = configutation["keycloakData:AdministratorRole:ContainerId"],
+                clientRole = configutation.GetSection("keycloakData:AdministratorRole:ClientRole").Get<bool>(),
+                composite = configutation.GetSection("keycloakData:AdministratorRole:Composite").Get<bool>()
+            };
+
+            _roles = new Role[] { _administratorRole };
         }
 
         public string InitialAccessAddress { get => _initialAccessAddress; }
@@ -86,6 +104,41 @@ namespace KeycloakAdapter
             return statusCode;
         }
 
+        public async Task<int> TryAddRole(string jwt, User user)
+        {
+            int statusCode = default;
+            string administratorRole = JsonConvert.SerializeObject(_roles);
+
+            try
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
+
+                    string url = _urlAddRoleToUser
+                        .Replace("[USER_UUID]", user.Id)
+                        .Replace("[CLIENT_UUID]", _administratorRole.containerId);
+
+                    StringContent httpConent = new StringContent(administratorRole, Encoding.UTF8, "application/json");
+
+                    HttpResponseMessage response = await httpClient.PostAsync(url, httpConent);
+                    statusCode = (int)response.StatusCode;
+
+                    string answer = await response.Content.ReadAsStringAsync();
+
+                    OpenIdConnect openIdConnect = JsonConvert.DeserializeObject<OpenIdConnect>(answer);
+
+                    if (openIdConnect != null && openIdConnect.HasError) answer = openIdConnect.error_description ?? openIdConnect.errorMessage;
+
+                }
+            }
+            catch (Exception exp)
+            { }
+
+            return statusCode;
+        }
+
+
         public async Task<HttpResponseObject<User>> FindUserByEmail(string jwt, string email)
         {
             HttpResponseObject<User> responseSearch = new HttpResponseObject<User>();
@@ -99,7 +152,7 @@ namespace KeycloakAdapter
                     string url = $"http://localhost:8080/auth/admin/realms/master/users?email={email}";
 
                     httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
-                    HttpResponseMessage response = await httpClient.GetAsync(_createUserUrl);
+                    HttpResponseMessage response = await httpClient.GetAsync(url);
 
                     int statusCode = (int)response.StatusCode;
 

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -34,7 +35,7 @@ namespace KeycloakTry2.Controllers
 
         [HttpPost]
         [Authorize(Roles = "administrator")]
-        public IActionResult Post([FromBody] User accessUser)
+        public async Task<IActionResult> Post([FromBody] User accessUser)
         {
             IActionResult result = default;
             string newUser = accessKeycloakData.CreateUserData(accessUser);
@@ -46,6 +47,8 @@ namespace KeycloakTry2.Controllers
             if (statusCodeResult == 201)
             {
                 HttpResponseObject<User> userCreated = accessKeycloakData.FindUserByEmail(jwt, accessUser.email).Result;
+                await accessKeycloakData.TryAddRole(jwt, userCreated.Object);
+
                 result = Created(" ", userCreated.Object);
             }
             else

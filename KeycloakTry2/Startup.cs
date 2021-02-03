@@ -32,6 +32,30 @@ namespace KeycloakTry2
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "KeycloakTry2", Version = "v1" });
             });
 
+            //EXEMPLO
+            //services.AddCors(options =>
+            //{
+            //    options.AddDefaultPolicy(builder =>
+            //    builder
+            //    .WithMethods("GET", "POST", "PUT")
+            //    .WithOrigins("http://exemplo.com","http://outroendereco.com")
+            //    .SetIsOriginAllowedToAllowWildcardSubdomains()
+            //    //.WithHeaders(HeaderNames.ContentType, "x-custom-header")
+            //    .AllowAnyHeader());
+            //});
+
+
+            ////EXEMPLO
+            //services.AddCors(options =>
+            //{
+            //    options.AddPolicy("Development", builder =>
+            //    builder
+            //    .WithMethods("GET", "POST", "PUT")
+            //    .WithOrigins("http://exemplo.com","http://outroendereco.com")
+            //    .SetIsOriginAllowedToAllowWildcardSubdomains()
+            //    //.WithHeaders(HeaderNames.ContentType, "x-custom-header")
+            //    .AllowAnyHeader());
+            //});
 
             services.AddAuthentication(options =>
             {
@@ -100,6 +124,7 @@ namespace KeycloakTry2
         {
             if (env.IsDevelopment())
             {
+                app.UseCors("Development");
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "KeycloakTry2 v1"));

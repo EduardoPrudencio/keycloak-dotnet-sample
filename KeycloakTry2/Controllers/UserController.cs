@@ -48,7 +48,6 @@ namespace KeycloakTry2.Controllers
             {
                 HttpResponseObject<User> userCreated = accessKeycloakData.FindUserByEmail(jwt, accessUser.email).Result;
                 await accessKeycloakData.TryAddRole(jwt, userCreated.Object);
-
                 result = Created(" ", userCreated.Object);
             }
             else

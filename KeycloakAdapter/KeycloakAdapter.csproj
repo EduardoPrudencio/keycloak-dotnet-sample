@@ -1,7 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
+   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Inovaideia.Keycloak.Adapter</PackageId>
+    <Version>1.0.0</Version>
+    <Title>C# adapter to keycloak</Title>
+    <Authors>Eduardo Prudencio</Authors>
+    <PackageLicenseExpression>MS-PL</PackageLicenseExpression>
+    <PackageRequireLincenseAcceptance>true</PackageRequireLincenseAcceptance>
+    <PackageReleaseNotes>Shareding library packaged for nuget</PackageReleaseNotes>
+    <Description>
+      This project is just a simple and first version of a C# adapter code for integration with the Keycloak framework.
+    </Description>
+    <Copyright>© 2021 Packt Publishing Limited</Copyright>
+    <PackageTags>Keycloak</PackageTags>
+    <Company>Inovaideia</Company>
+    
   </PropertyGroup>
 
   <ItemGroup>

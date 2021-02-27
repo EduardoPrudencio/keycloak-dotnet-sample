@@ -11,24 +11,24 @@ namespace KeycloakAdapter
 {
     public class KeycloakManager
     {
-        private string _baseAddress;
-        private string _urlAddRoleToUser;
-        private string _initialAccessAddress;
-        private string _clientId;
-        private string _clientSecret;
-        private string _createUserUrl;
-        private Role _administratorRole;
-        private Role[] _roles;
+        private readonly string _baseAddress;
+        private readonly string _urlAddRoleToUser;
+        private readonly string _initialAccessAddress;
+        private readonly string _clientId;
+        private readonly string _clientSecret;
+        private readonly string _createUserUrl;
+        private readonly Role _administratorRole;
+        private readonly Role[] _roles;
 
         public KeycloakManager(IConfiguration configutation)
         {
             _baseAddress = configutation["keycloakData:UrlBase"];
             _urlAddRoleToUser = _baseAddress + configutation["keycloakData:UrlAddRoleToUser"];
 
-            _initialAccessAddress = configutation["keycloakData:SessionStartUrl"];
+            _initialAccessAddress = _baseAddress + configutation["keycloakData:SessionStartUrl"];
             _clientId = configutation["keycloakData:ClientId"];
             _clientSecret = configutation["keycloakData:ClientSecret"];
-            _createUserUrl = configutation["keycloakData:CreateUserUrl"];
+            _createUserUrl = _baseAddress + configutation["keycloakData:CreateUserUrl"];
 
             _administratorRole = new Role
             {
@@ -63,19 +63,16 @@ namespace KeycloakAdapter
 
         public async Task<OpenIdConnect> TryLoginExecute(string login, string password)
         {
-            using (var httpClient = new HttpClient())
-            {
-                using (var content = new FormUrlEncodedContent(GetHeaderSessionStart(login, password)))
-                {
-                    content.Headers.Clear();
-                    content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
+            using var httpClient = new HttpClient();
+            using var content = new FormUrlEncodedContent(GetHeaderSessionStart(login, password));
 
-                    HttpResponseMessage response = await httpClient.PostAsync(_initialAccessAddress, content);
-                    string answer = await response.Content.ReadAsStringAsync();
+            content.Headers.Clear();
+            content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
 
-                    return GetAccessResult(answer);
-                }
-            }
+            HttpResponseMessage response = await httpClient.PostAsync(_initialAccessAddress, content);
+            string answer = await response.Content.ReadAsStringAsync();
+
+            return GetAccessResult(answer);
         }
 
         public async Task<int> TryCreateUser(string jwt, StringContent httpConent)
@@ -84,21 +81,18 @@ namespace KeycloakAdapter
 
             try
             {
-                using (var httpClient = new HttpClient())
-                {
-                    httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
-                    HttpResponseMessage response = await httpClient.PostAsync(_createUserUrl, httpConent);
-                    statusCode = (int)response.StatusCode;
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
+                HttpResponseMessage response = await httpClient.PostAsync(_createUserUrl, httpConent);
+                statusCode = (int)response.StatusCode;
 
-                    string answer = await response.Content.ReadAsStringAsync();
+                string answer = await response.Content.ReadAsStringAsync();
 
-                    OpenIdConnect openIdConnect = JsonConvert.DeserializeObject<OpenIdConnect>(answer);
+                OpenIdConnect openIdConnect = JsonConvert.DeserializeObject<OpenIdConnect>(answer);
 
-                    if (openIdConnect != null && openIdConnect.HasError) answer = openIdConnect.error_description ?? openIdConnect.errorMessage;
-
-                }
+                if (openIdConnect != null && openIdConnect.HasError) answer = openIdConnect.error_description ?? openIdConnect.errorMessage;
             }
-            catch (Exception exp)
+            catch (Exception)
             { }
 
             return statusCode;
@@ -111,35 +105,32 @@ namespace KeycloakAdapter
 
             try
             {
-                using (var httpClient = new HttpClient())
-                {
-                    httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
 
-                    string url = _urlAddRoleToUser
-                        .Replace("[USER_UUID]", user.Id)
-                        .Replace("[CLIENT_UUID]", _administratorRole.containerId);
+                string url = _urlAddRoleToUser
+                    .Replace("[USER_UUID]", user.Id)
+                    .Replace("[CLIENT_UUID]", _administratorRole.containerId);
 
-                    StringContent httpConent = new StringContent(administratorRole, Encoding.UTF8, "application/json");
+                StringContent httpConent = new StringContent(administratorRole, Encoding.UTF8, "application/json");
 
-                    HttpResponseMessage response = await httpClient.PostAsync(url, httpConent);
-                    statusCode = (int)response.StatusCode;
+                HttpResponseMessage response = await httpClient.PostAsync(url, httpConent);
+                statusCode = (int)response.StatusCode;
 
-                    string answer = await response.Content.ReadAsStringAsync();
+                string answer = await response.Content.ReadAsStringAsync();
 
-                    OpenIdConnect openIdConnect = JsonConvert.DeserializeObject<OpenIdConnect>(answer);
+                OpenIdConnect openIdConnect = JsonConvert.DeserializeObject<OpenIdConnect>(answer);
 
-                    if (openIdConnect != null && openIdConnect.HasError) answer = openIdConnect.error_description ?? openIdConnect.errorMessage;
-
-                }
+                if (openIdConnect != null && openIdConnect.HasError) answer = openIdConnect.error_description ?? openIdConnect.errorMessage;
             }
-            catch (Exception exp)
+            catch (Exception)
             { }
 
             return statusCode;
         }
 
 
-        public async Task<HttpResponseObject<User>> FindUserByEmail(string jwt, string email)
+        public static async Task<HttpResponseObject<User>> FindUserByEmail(string jwt, string email)
         {
             HttpResponseObject<User> responseSearch = new HttpResponseObject<User>();
 
@@ -147,36 +138,34 @@ namespace KeycloakAdapter
 
             try
             {
-                using (var httpClient = new HttpClient())
-                {
-                    string url = $"http://localhost:8080/auth/admin/realms/master/users?email={email}";
+                using var httpClient = new HttpClient();
+                string url = $"http://localhost:8080/auth/admin/realms/master/users?email={email}";
 
-                    httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
-                    HttpResponseMessage response = await httpClient.GetAsync(url);
+                httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
+                HttpResponseMessage response = await httpClient.GetAsync(url);
 
-                    int statusCode = (int)response.StatusCode;
+                int statusCode = (int)response.StatusCode;
 
-                    string answer = await response.Content.ReadAsStringAsync();
+                string answer = await response.Content.ReadAsStringAsync();
 
-                    userResponse = JsonConvert.DeserializeObject<List<User>>(answer);
+                userResponse = JsonConvert.DeserializeObject<List<User>>(answer);
 
-                    User finalResponse = (userResponse.Any()) ? userResponse.FirstOrDefault(u => !string.IsNullOrEmpty(u.email)) : null;
+                User finalResponse = (userResponse.Any()) ? userResponse.FirstOrDefault(u => !string.IsNullOrEmpty(u.email)) : null;
 
-                    responseSearch.Create(statusCode, finalResponse);
-                }
+                responseSearch.Create(statusCode, finalResponse);
             }
-            catch (Exception exp)
+            catch (Exception)
             { }
 
             return responseSearch;
         }
 
-        public OpenIdConnect GetAccessResult(string answer)
+        public static OpenIdConnect GetAccessResult(string answer)
         {
             return JsonConvert.DeserializeObject<OpenIdConnect>(answer);
         }
 
-        public string CreateUserData(User user)
+        public static string CreateUserData(User user)
         {
             StringBuilder userJson = new StringBuilder();
             userJson.Append("{ \"firstName\":\"");

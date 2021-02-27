@@ -1,4 +1,6 @@
-﻿using KeycloakAdapter;
+﻿//using KeycloakAdapter;
+
+using KeycloakAdapter;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +17,6 @@ namespace KeycloakTry2.Controllers
     public class SessionController : ControllerBase
     {
         IConfiguration _configutation;
-
         public SessionController(IConfiguration configutation)
         {
             _configutation = configutation;
@@ -27,6 +28,7 @@ namespace KeycloakTry2.Controllers
             string answer = string.Empty;
 
             KeycloakManager accessKeycloakData = new KeycloakManager(_configutation);
+
 
             OpenIdConnect openIdConnect = accessKeycloakData.TryLoginExecute(login, password).Result;
 

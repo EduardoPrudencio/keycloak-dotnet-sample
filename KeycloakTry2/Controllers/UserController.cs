@@ -38,7 +38,7 @@ namespace KeycloakTry2.Controllers
         public async Task<IActionResult> Post([FromBody] User accessUser)
         {
             IActionResult result = default;
-            string newUser = accessKeycloakData.CreateUserData(accessUser);
+            string newUser = KeycloakManager.CreateUserData(accessUser);
             StringContent httpConent = new StringContent(newUser, Encoding.UTF8, "application/json");
             string jwt = Request.Headers["Authorization"];
 
@@ -46,7 +46,7 @@ namespace KeycloakTry2.Controllers
 
             if (statusCodeResult == 201)
             {
-                HttpResponseObject<User> userCreated = accessKeycloakData.FindUserByEmail(jwt, accessUser.email).Result;
+                HttpResponseObject<User> userCreated = KeycloakManager.FindUserByEmail(jwt, accessUser.email).Result;
                 await accessKeycloakData.TryAddRole(jwt, userCreated.Object);
                 result = Created(" ", userCreated.Object);
             }
@@ -54,7 +54,6 @@ namespace KeycloakTry2.Controllers
             {
                 result = new StatusCodeResult(statusCodeResult);
             }
-
 
             return result;
         }

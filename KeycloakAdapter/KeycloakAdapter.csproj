@@ -1,30 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageId>Inovaideia.Keycloak.Adapter</PackageId>
-    <Version>1.0.0</Version>
-    <Title>C# adapter to keycloak</Title>
     <Authors>Eduardo Prudencio</Authors>
-    <PackageLicenseExpression>MS-PL</PackageLicenseExpression>
-    <PackageRequireLincenseAcceptance>true</PackageRequireLincenseAcceptance>
-    <PackageReleaseNotes>Shareding library packaged for nuget</PackageReleaseNotes>
-    <Description>
-      This project is just a simple and first version of a C# adapter code for integration with the Keycloak framework.
-    </Description>
-    <Copyright>© 2021 Packt Publishing Limited</Copyright>
-    <PackageTags>Keycloak</PackageTags>
     <Company>Inovaideia</Company>
-    
+    <Description>This version will allow you to login, create a user with a role and much more, but I need to make some adjustments to improve its operation.</Description>
+    <RepositoryUrl>https://github.com/EduardoPrudencio/keycloak-dotnet-sample</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/EduardoPrudencio</PackageProjectUrl>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Version>2.0.4</Version>
+    <PackageTags>Keycloak</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>keycloak-icon.png</PackageIcon>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Folder Include="bin\Release\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\keycloak-icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
 </Project>

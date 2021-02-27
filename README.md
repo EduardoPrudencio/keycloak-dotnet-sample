@@ -1,5 +1,8 @@
 # keycloak.Adapter
 
+Link do projeto no Nuget:
+https://www.nuget.org/packages/KeycloakAdapter/2.0.4
+
 Depois de muito tempo procurando algo que me permitisse integrar diretamente com o Keycloak sem obter sucesso, decidi invertir um pouco mais nos meus estudos e 
 cheguei nesse projeto que agora compartilho com mais quem achar que pode ser ajudado por ele.
 Ainda pretendo melhora muita coisa e sei que tem muito que pode ser melhorado, tanto em código C# com na comunicação com o Keycloak, por exemplo, eu não vi uma forma de retornar 

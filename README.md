@@ -132,8 +132,8 @@ public Task<string> Post(string login, string password)
     return Task.FromResult(answer);
 }
 
-Esse método cria o usuário e insere no mesmo uma role.
-Esse método precisa ser alterado para que a role seja recebida por parâmetro
+Esse método cria o usuário e atribui uma role para ele.
+A role está no appsettings.json com a chave AdministratorRole.
 
 [HttpPost]
 [Authorize(Roles = "administrator")]

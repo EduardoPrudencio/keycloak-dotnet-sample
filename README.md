@@ -96,22 +96,16 @@ public void ConfigureServices(IServiceCollection services)
         }
         
      Depois inclua o seguinte bloco no appsettings.json
-        
     "keycloakData": {
-    "UrlBase": "http://localhost:8080/",
-    "SessionStartUrl": "auth/realms/master/protocol/openid-connect/token",
-    "CreateUserUrl": "auth/admin/realms/master/users",
-    "UrlAddRoleToUser": "auth/admin/realms/master/users/[USER_UUID]/role-mappings/clients/[CLIENT_UUID]",
-    "ClientId": "admin-cli",
-    "ClientSecret": "59031ebb-38be-47dd-8b21-010b19f29d62",
-    "AdministratorRole": {
-      "id": "3a97fbc5-0430-4629-8768-06d24cfb04e4",
-      "name": "administrator",
-      "composite": false,
-      "clientRole": true,
-      "containerId": "f0fbec81-5906-47ba-8780-8a5d3a97cf4d"
-    }
-  }  
+      "UrlBase": "http://localhost:8080/",
+      "SessionStartUrl": "auth/realms/master/protocol/openid-connect/token",
+      "CreateUserUrl": "auth/admin/realms/master/users",
+      "UrlAddRoleToUser": "auth/admin/realms/master/users/[USER_UUID]/role-mappings/clients/[CLIENT_UUID]",
+      "ClientId": "admin-cli",
+      "ClientSecret": "59031ebb-38be-47dd-8b21-010b19f29d62",
+      "Roles": "[{\"id\":\"3a97fbc5-0430-4629-8768-06d24cfb04e4\",\"name\":\"administrator\",\"composite\":false,\"clientRole\":true,\"containerId\":\"f0fbec81-5906-47ba-8780-8a5d3a97cf4d\"}]"
+    },        
+
 .....
 
 Essa é a chamada que criei para realizar o login da api no Keycloak
@@ -135,31 +129,30 @@ public Task<string> Post(string login, string password)
 Esse método cria o usuário e atribui uma role para ele.
 A role está no appsettings.json com a chave AdministratorRole.
 
-[HttpPost]
-[Authorize(Roles = "administrator")]
-public async Task<IActionResult> Post([FromBody] User accessUser)
-{
-    IActionResult result = default;
-    string newUser = KeycloakManager.CreateUserData(accessUser);
-    StringContent httpConent = new StringContent(newUser, Encoding.UTF8, "application/json");
-    string jwt = Request.Headers["Authorization"];
+ [HttpPost]
+        [Authorize(Roles = "administrator")]
+        public async Task<IActionResult> Post([FromBody] User accessUser)
+        {
+            IActionResult result = default;
+            string newUser = KeycloakManager.CreateUserData(accessUser);
+            StringContent httpConent = new StringContent(newUser, Encoding.UTF8, "application/json");
+            string jwt = Request.Headers["Authorization"];
 
-    int statusCodeResult = accessKeycloakData.TryCreateUser(jwt, httpConent).Result;
+            int statusCodeResult = accessKeycloakData.TryCreateUser(jwt, httpConent).Result;
 
-    if (statusCodeResult == 201)
-    {
-        HttpResponseObject<User> userCreated = KeycloakManager.FindUserByEmail(jwt, accessUser.email).Result;
-        await accessKeycloakData.TryAddRole(jwt, userCreated.Object);
-        result = Created(" ", userCreated.Object);
-    }
-    else
-    {
-        result = new StatusCodeResult(statusCodeResult);
-    }
-
-    return result;
-}
-        
+            if (statusCodeResult == 201)
+            {
+                HttpResponseObject<User> userCreated = KeycloakManager.FindUserByEmail(jwt, accessUser.email).Result;
+                await accessKeycloakData.TryAddRole(jwt, userCreated.Object, "administrator");
+                result = Created(" ", userCreated.Object);
+            }
+            else
+            {
+                result = new StatusCodeResult(statusCodeResult);
+            }
+            
+            return result;
+        }
         
 
 

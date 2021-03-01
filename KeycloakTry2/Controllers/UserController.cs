@@ -51,11 +51,7 @@ namespace KeycloakTry2.Controllers
 
             if (statusCodeResult == 201)
             {
-                string roleAdmin = _configutation["keycloakData:AdministratorRole"];
-                string containerId = _configutation["keycloakData:AdministratorRole.container"];
-
                 HttpResponseObject<User> userCreated = KeycloakManager.FindUserByEmail(jwt, accessUser.email).Result;
-                //await accessKeycloakData.TryAddRole(jwt, userCreated.Object);
                 await accessKeycloakData.TryAddRole(jwt, userCreated.Object, "administrator");
                 result = Created(" ", userCreated.Object);
             }

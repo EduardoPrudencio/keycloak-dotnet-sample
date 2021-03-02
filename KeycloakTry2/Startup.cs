@@ -64,13 +64,13 @@ namespace KeycloakTry2
 
             }).AddJwtBearer(o =>
             {
-                o.Authority = Configuration["Jwt:Authority"];
-                o.Audience = Configuration["Jwt:Audience"];
+                o.Authority = Configuration["keycloakData:UrlBase"] + Configuration["keycloakData:Authority"];
+                o.Audience = Configuration["keycloakData:ClientId"];
                 o.SaveToken = false;
                 o.RequireHttpsMetadata = false;
                 o.IncludeErrorDetails = true;
                 o.RequireHttpsMetadata = false;
-                o.MetadataAddress = "http://localhost:8080/auth/realms/master/.well-known/openid-configuration";
+                o.MetadataAddress = Configuration["keycloakData:UrlBase"] + Configuration["keycloakData:MetadataUrl"];
 
                 //o.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                 //{

@@ -17,12 +17,14 @@ namespace KeycloakAdapter
         private readonly string _clientId;
         private readonly string _clientSecret;
         private readonly string _createUserUrl;
+        private readonly string _metadaAddressUrl;
         private readonly Role[] _roles;
 
         public KeycloakManager(IConfiguration configutation)
         {
             _baseAddress = configutation["keycloakData:UrlBase"];
             _urlAddRoleToUser = _baseAddress + configutation["keycloakData:UrlAddRoleToUser"];
+            _metadaAddressUrl = _baseAddress + configutation["keycloakData:MetadataUrl"];
 
             _initialAccessAddress = _baseAddress + configutation["keycloakData:SessionStartUrl"];
             _clientId = configutation["keycloakData:ClientId"];
@@ -36,6 +38,7 @@ namespace KeycloakAdapter
         public string ClientId { get => _clientId; }
         public string ClientSecret { get => _clientSecret; }
         public string CreateUserUrl { get => _createUserUrl; }
+        public string MetadataUrl { get => _metadaAddressUrl; }
 
         public IEnumerable<KeyValuePair<string, string>> GetHeaderSessionStart(string login, string password)
         {

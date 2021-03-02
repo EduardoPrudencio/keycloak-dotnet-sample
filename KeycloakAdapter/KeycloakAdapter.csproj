@@ -9,7 +9,7 @@
     <PackageProjectUrl>https://github.com/EduardoPrudencio</PackageProjectUrl>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-    <Version>2.1.0</Version>
+    <Version>2.1.1</Version>
     <PackageTags>Keycloak</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>keycloak-icon.png</PackageIcon>

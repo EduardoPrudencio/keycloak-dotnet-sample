@@ -16,7 +16,7 @@ namespace KeycloakAdapter
         private readonly string _initialAccessAddress;
         private readonly string _clientId;
         private readonly string _clientSecret;
-        private readonly string _createUserUrl;
+        private readonly string _userUrl;
         private readonly string _metadaAddressUrl;
         private readonly Role[] _roles;
 
@@ -29,7 +29,7 @@ namespace KeycloakAdapter
             _initialAccessAddress = _baseAddress + configutation["keycloakData:SessionStartUrl"];
             _clientId = configutation["keycloakData:ClientId"];
             _clientSecret = configutation["keycloakData:ClientSecret"];
-            _createUserUrl = _baseAddress + configutation["keycloakData:CreateUserUrl"];
+            _userUrl = _baseAddress + configutation["keycloakData:UserUrl"];
 
             _roles = System.Text.Json.JsonSerializer.Deserialize<Role[]>(configutation["keycloakData:Roles"]);
         }
@@ -37,7 +37,7 @@ namespace KeycloakAdapter
         public string InitialAccessAddress { get => _initialAccessAddress; }
         public string ClientId { get => _clientId; }
         public string ClientSecret { get => _clientSecret; }
-        public string CreateUserUrl { get => _createUserUrl; }
+        public string UserUrl { get => _userUrl; }
         public string MetadataUrl { get => _metadaAddressUrl; }
 
         public IEnumerable<KeyValuePair<string, string>> GetHeaderSessionStart(string login, string password)
@@ -76,7 +76,7 @@ namespace KeycloakAdapter
             {
                 using var httpClient = new HttpClient();
                 httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
-                HttpResponseMessage response = await httpClient.PostAsync(_createUserUrl, httpConent);
+                HttpResponseMessage response = await httpClient.PostAsync(_userUrl, httpConent);
                 statusCode = (int)response.StatusCode;
 
                 string answer = await response.Content.ReadAsStringAsync();
@@ -124,16 +124,15 @@ namespace KeycloakAdapter
             return statusCode;
         }
 
-        public static async Task<HttpResponseObject<User>> FindUserByEmail(string jwt, string email)
+        public async Task<HttpResponseObject<User>> FindUserByEmail(string jwt, string email)
         {
             HttpResponseObject<User> responseSearch = new HttpResponseObject<User>();
-
             List<User> userResponse;
 
             try
             {
                 using var httpClient = new HttpClient();
-                string url = $"http://localhost:8080/auth/admin/realms/master/users?email={email}";
+                string url = $"{_userUrl}?email={email}";
 
                 httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
                 HttpResponseMessage response = await httpClient.GetAsync(url);

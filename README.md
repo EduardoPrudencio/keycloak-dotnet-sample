@@ -1,7 +1,7 @@
 # keycloak.Adapter
 
 Link do projeto no Nuget:
-https://www.nuget.org/packages/KeycloakAdapter/2.0.4
+https://www.nuget.org/packages/KeycloakAdapter/2.1.1
 
 Depois de muito tempo procurando algo que me permitisse integrar diretamente com o Keycloak sem obter sucesso, decidi invertir um pouco mais nos meus estudos e 
 cheguei nesse projeto que agora compartilho com mais quem achar que pode ser ajudado por ele.
@@ -41,13 +41,13 @@ public void ConfigureServices(IServiceCollection services)
 
             }).AddJwtBearer(o =>
             {
-                o.Authority = Configuration["keycloakData:Authority"];
-                o.Audience = Configuration["keycloakData:Audience"];
+                o.Authority = Configuration["keycloakData:UrlBase"] + Configuration["keycloakData:Authority"];
+                o.Audience = Configuration["keycloakData:ClientId"];
                 o.SaveToken = false;
                 o.RequireHttpsMetadata = false;
                 o.IncludeErrorDetails = true;
                 o.RequireHttpsMetadata = false;
-                o.MetadataAddress = Configuration["keycloakData:MetadataAddress"];
+                o.MetadataAddress = Configuration["keycloakData:UrlBase"] + Configuration["keycloakData:MetadataUrl"];
 
                 o.Events = new JwtBearerEvents()
                 {
@@ -76,6 +76,14 @@ public void ConfigureServices(IServiceCollection services)
             });
         }
         
+        No método Configure adcione a chamada para UseAuthentication
+        
+         ...
+         app.UseRouting();
+         app.UseAuthentication();
+         app.UseAuthorization();
+         ...
+        
         Crie o método MapKeycloakRolesToRoleClaims
         
         private static void MapKeycloakRolesToRoleClaims(TokenValidatedContext context)
@@ -96,15 +104,18 @@ public void ConfigureServices(IServiceCollection services)
         }
         
      Depois inclua o seguinte bloco no appsettings.json
-    "keycloakData": {
+     
+     "keycloakData": {
       "UrlBase": "http://localhost:8080/",
+      "Authority": "auth/realms/master",
+      "MetadataUrl": "auth/realms/master/.well-known/openid-configuration",
       "SessionStartUrl": "auth/realms/master/protocol/openid-connect/token",
       "CreateUserUrl": "auth/admin/realms/master/users",
       "UrlAddRoleToUser": "auth/admin/realms/master/users/[USER_UUID]/role-mappings/clients/[CLIENT_UUID]",
       "ClientId": "admin-cli",
       "ClientSecret": "59031ebb-38be-47dd-8b21-010b19f29d62",
       "Roles": "[{\"id\":\"3a97fbc5-0430-4629-8768-06d24cfb04e4\",\"name\":\"administrator\",\"composite\":false,\"clientRole\":true,\"containerId\":\"f0fbec81-5906-47ba-8780-8a5d3a97cf4d\"}]"
-    },        
+    },
 
 .....
 

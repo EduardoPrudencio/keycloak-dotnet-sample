@@ -140,31 +140,28 @@ public Task<string> Post(string login, string password)
 Esse método cria o usuário e atribui uma role para ele.
 A role está no appsettings.json com a chave AdministratorRole.
 
- [HttpPost]
-        [Authorize(Roles = "administrator")]
-        public async Task<IActionResult> Post([FromBody] User accessUser)
-        {
-            IActionResult result = default;
-            string newUser = KeycloakManager.CreateUserData(accessUser);
-            StringContent httpConent = new StringContent(newUser, Encoding.UTF8, "application/json");
-            string jwt = Request.Headers["Authorization"];
+[HttpPost]
+[Authorize(Roles = "administrator")]
+public async Task<IActionResult> Post([FromBody] User accessUser)
+{
+    IActionResult result = default;
+    string newUser = KeycloakManager.CreateUserData(accessUser);
+    StringContent httpConent = new StringContent(newUser, Encoding.UTF8, "application/json");
+    string jwt = Request.Headers["Authorization"];
 
-            int statusCodeResult = accessKeycloakData.TryCreateUser(jwt, httpConent).Result;
+    int statusCodeResult = accessKeycloakData.TryCreateUser(jwt, httpConent).Result;
 
-            if (statusCodeResult == 201)
-            {
-                HttpResponseObject<User> userCreated = KeycloakManager.FindUserByEmail(jwt, accessUser.email).Result;
-                await accessKeycloakData.TryAddRole(jwt, userCreated.Object, "administrator");
-                result = Created(" ", userCreated.Object);
-            }
-            else
-            {
-                result = new StatusCodeResult(statusCodeResult);
-            }
-            
-            return result;
-        }
-        
+    if (statusCodeResult == 201)
+    {
+        HttpResponseObject<User> userCreated = accessKeycloakData.FindUserByEmail(jwt, accessUser.email).Result;
+        await accessKeycloakData.TryAddRole(jwt, userCreated.Object, "administrator");
+        result = Created(" ", userCreated.Object);
+    }
+    else
+    {
+        result = new StatusCodeResult(statusCodeResult);
+    }
 
-
-        
+    return result;
+}
+    

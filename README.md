@@ -76,6 +76,14 @@ public void ConfigureServices(IServiceCollection services)
             });
         }
         
+        No método Configure adcione a chamada para UseAuthentication
+        
+         ...
+         app.UseRouting();
+         app.UseAuthentication();
+         app.UseAuthorization();
+         ...
+        
         Crie o método MapKeycloakRolesToRoleClaims
         
         private static void MapKeycloakRolesToRoleClaims(TokenValidatedContext context)

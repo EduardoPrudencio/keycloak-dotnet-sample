@@ -29,7 +29,6 @@ namespace KeycloakTry2.Controllers
 
             KeycloakManager accessKeycloakData = new KeycloakManager(_configutation);
 
-
             OpenIdConnect openIdConnect = accessKeycloakData.TryLoginExecute(login, password).Result;
 
             if (openIdConnect.HasError) answer = openIdConnect.error_description;

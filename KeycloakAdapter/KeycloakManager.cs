@@ -68,12 +68,15 @@ namespace KeycloakAdapter
             return GetAccessResult(answer);
         }
 
-        public async Task<int> TryCreateUser(string jwt, StringContent httpConent)
+        public async Task<int> TryCreateUser(string jwt, User user)
         {
             int statusCode = default;
 
             try
             {
+                string newUser = CreateUserDataInsert(user);
+                StringContent httpConent = new StringContent(newUser, Encoding.UTF8, "application/json");
+
                 using var httpClient = new HttpClient();
                 httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
                 HttpResponseMessage response = await httpClient.PostAsync(_userUrl, httpConent);
@@ -90,6 +93,38 @@ namespace KeycloakAdapter
 
             return statusCode;
         }
+
+        public async Task<int> TryUpdateUser(string jwt, User user)
+        {
+            int statusCode = default;
+
+            if (string.IsNullOrWhiteSpace(user.Id)) return 400;
+
+            try
+            {
+                string newUser = CreateUserDataUpdate(user);
+                StringContent httpConent = new StringContent(newUser, Encoding.UTF8, "application/json");
+
+                string urlUpdateUser = $"{_userUrl}/{user.Id}";
+
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
+                HttpResponseMessage response = await httpClient.PutAsync(urlUpdateUser, httpConent);
+                statusCode = (int)response.StatusCode;
+
+                string answer = await response.Content.ReadAsStringAsync();
+
+                OpenIdConnect openIdConnect = JsonConvert.DeserializeObject<OpenIdConnect>(answer);
+
+                if (openIdConnect != null && openIdConnect.HasError) answer = openIdConnect.error_description ?? openIdConnect.errorMessage;
+            }
+            catch (Exception)
+            { }
+
+            return statusCode;
+        }
+
+
         public async Task<int> TryAddRole(string jwt, User user, string roleName)
         {
             Role roleToAdd = this._roles.FirstOrDefault(r => r.name.Equals(roleName));
@@ -158,7 +193,7 @@ namespace KeycloakAdapter
             return JsonConvert.DeserializeObject<OpenIdConnect>(answer);
         }
 
-        public static string CreateUserData(User user)
+        public static string CreateUserDataInsert(User user)
         {
             StringBuilder userJson = new StringBuilder();
             userJson.Append("{ \"firstName\":\"");
@@ -176,5 +211,21 @@ namespace KeycloakAdapter
             return userJson.ToString();
         }
 
+
+        public static string CreateUserDataUpdate(User user)
+        {
+            StringBuilder userJson = new StringBuilder();
+            userJson.Append("{ \"firstName\":\"");
+            userJson.Append(user.firstName);
+            userJson.Append("\",\"lastName\":\"");
+            userJson.Append(user.lastName);
+            userJson.Append("\",\"email\":\"");
+            userJson.Append(user.email);
+            userJson.Append("\",\"enabled\":\"true\", \"emailVerified\":\"true\",\"username\":\"");
+            userJson.Append(user.username);
+            userJson.Append("\"}");
+
+            return userJson.ToString();
+        }
     }
 }

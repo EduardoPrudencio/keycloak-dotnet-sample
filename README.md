@@ -114,7 +114,7 @@ public void ConfigureServices(IServiceCollection services)
       "UrlAddRoleToUser": "auth/admin/realms/master/users/[USER_UUID]/role-mappings/clients/[CLIENT_UUID]",
       "ClientId": "admin-cli",
       "ClientSecret": "59031ebb-38be-47dd-8b21-010b19f29d62",
-      "Roles": "[{\"id\":\"3a97fbc5-0430-4629-8768-06d24cfb04e4\",\"name\":\"administrator\",\"composite\":false,\"clientRole\":true,\"containerId\":\"f0fbec81-5906-47ba-8780-8a5d3a97cf4d\"}]"
+      "Roles": "[{\"id\":\"3a97fbc5-0430-4629-8768-06d24cfb04e4\",\"name\":\"administrator\",\"composite\":false,\"clientRole\":true,\"containerId\":\"f0fbec81-5906-47ba-8780-8a5d3a97cf4d\"},{\"id\":\"8231f4f1-8045-47ef-91d0-1da59789596d\",\"name\":\"user\",\"composite\":false,\"clientRole\":true,\"containerId\":\"f0fbec81-5906-47ba-8780-8a5d3a97cf4d\"}]"
     },
 
 .....
@@ -138,33 +138,30 @@ public Task<string> Post(string login, string password)
 }
 
 Esse método cria o usuário e atribui uma role para ele.
-A role está no appsettings.json com a chave AdministratorRole.
+A role está no appsettings.json com a chave Roles.
 
- [HttpPost]
-        [Authorize(Roles = "administrator")]
-        public async Task<IActionResult> Post([FromBody] User accessUser)
-        {
-            IActionResult result = default;
-            string newUser = KeycloakManager.CreateUserData(accessUser);
-            StringContent httpConent = new StringContent(newUser, Encoding.UTF8, "application/json");
-            string jwt = Request.Headers["Authorization"];
+[HttpPost]
+[Authorize(Roles = "administrator")]
+public async Task<IActionResult> Post([FromBody] User accessUser)
+{
+    IActionResult result = default;
+    string newUser = KeycloakManager.CreateUserData(accessUser);
+    StringContent httpConent = new StringContent(newUser, Encoding.UTF8, "application/json");
+    string jwt = Request.Headers["Authorization"];
 
-            int statusCodeResult = accessKeycloakData.TryCreateUser(jwt, httpConent).Result;
+    int statusCodeResult = accessKeycloakData.TryCreateUser(jwt, httpConent).Result;
 
-            if (statusCodeResult == 201)
-            {
-                HttpResponseObject<User> userCreated = KeycloakManager.FindUserByEmail(jwt, accessUser.email).Result;
-                await accessKeycloakData.TryAddRole(jwt, userCreated.Object, "administrator");
-                result = Created(" ", userCreated.Object);
-            }
-            else
-            {
-                result = new StatusCodeResult(statusCodeResult);
-            }
-            
-            return result;
-        }
-        
+    if (statusCodeResult == 201)
+    {
+        HttpResponseObject<User> userCreated = accessKeycloakData.FindUserByEmail(jwt, accessUser.email).Result;
+        await accessKeycloakData.TryAddRole(jwt, userCreated.Object, "administrator");
+        result = Created(" ", userCreated.Object);
+    }
+    else
+    {
+        result = new StatusCodeResult(statusCodeResult);
+    }
 
-
-        
+    return result;
+}
+    

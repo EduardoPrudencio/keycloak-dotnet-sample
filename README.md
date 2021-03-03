@@ -1,7 +1,7 @@
 # keycloak.Adapter
 
 Link do projeto no Nuget:
-https://www.nuget.org/packages/KeycloakAdapter/2.1.1
+https://www.nuget.org/packages/KeycloakAdapter/2.2.0
 
 Depois de muito tempo procurando algo que me permitisse integrar diretamente com o Keycloak sem obter sucesso, decidi invertir um pouco mais nos meus estudos e 
 cheguei nesse projeto que agora compartilho com mais quem achar que pode ser ajudado por ele.
@@ -144,24 +144,22 @@ A role está no appsettings.json com a chave Roles.
 [Authorize(Roles = "administrator")]
 public async Task<IActionResult> Post([FromBody] User accessUser)
 {
-    IActionResult result = default;
-    string newUser = KeycloakManager.CreateUserData(accessUser);
-    StringContent httpConent = new StringContent(newUser, Encoding.UTF8, "application/json");
-    string jwt = Request.Headers["Authorization"];
+      IActionResult result = default;
 
-    int statusCodeResult = accessKeycloakData.TryCreateUser(jwt, httpConent).Result;
+      string jwt = Request.Headers["Authorization"];
+      int statusCodeResult = accessKeycloakData.TryCreateUser(jwt, accessUser).Result;
 
-    if (statusCodeResult == 201)
-    {
-        HttpResponseObject<User> userCreated = accessKeycloakData.FindUserByEmail(jwt, accessUser.email).Result;
-        await accessKeycloakData.TryAddRole(jwt, userCreated.Object, "administrator");
-        result = Created(" ", userCreated.Object);
-    }
-    else
-    {
-        result = new StatusCodeResult(statusCodeResult);
-    }
+      if (statusCodeResult == 201)
+      {
+          HttpResponseObject<User> userCreated = accessKeycloakData.FindUserByEmail(jwt, accessUser.email).Result;
+          await accessKeycloakData.TryAddRole(jwt, userCreated.Object, "administrator");
+          result = Created(" ", userCreated.Object);
+      }
+      else
+      {
+          result = new StatusCodeResult(statusCodeResult);
+      }
 
-    return result;
+      return result;
 }
     

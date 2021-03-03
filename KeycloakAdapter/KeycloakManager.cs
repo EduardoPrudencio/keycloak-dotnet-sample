@@ -215,6 +215,35 @@ namespace KeycloakAdapter
             return responseSearch;
         }
 
+        public async Task<HttpResponseObject<User>> FindUserById(string jwt, string id)
+        {
+            HttpResponseObject<User> responseSearch = new HttpResponseObject<User>();
+            User userResponse;
+
+            try
+            {
+                using var httpClient = new HttpClient();
+                string url = $"{_userUrl}/{id}";
+
+                httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
+                HttpResponseMessage response = await httpClient.GetAsync(url);
+
+                int statusCode = (int)response.StatusCode;
+
+                string answer = await response.Content.ReadAsStringAsync();
+
+                userResponse = JsonConvert.DeserializeObject<User>(answer);
+
+                responseSearch.Create(statusCode, userResponse);
+            }
+            catch (Exception exp)
+            {
+                throw;
+            }
+
+            return responseSearch;
+        }
+
         public static OpenIdConnect GetAccessResult(string answer)
         {
             return JsonConvert.DeserializeObject<OpenIdConnect>(answer);

@@ -87,14 +87,26 @@ namespace KeycloakTry2.Controllers
             }
         }
 
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpDelete]
+        [Authorize(Roles = "administrator")]
+        public IActionResult Delete([FromBody] User accessUser)
         {
+            try
+            {
+                IActionResult result = default;
+
+                string jwt = Request.Headers["Authorization"];
+                int statusCodeResult = accessKeycloakData.TryDeleteUser(jwt, accessUser).Result;
+
+                result = new StatusCodeResult(statusCodeResult);
+
+                return result;
+            }
+            catch (System.Exception)
+            {
+                throw;
+            }
         }
 
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }

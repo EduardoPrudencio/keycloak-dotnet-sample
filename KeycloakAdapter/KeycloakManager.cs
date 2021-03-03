@@ -40,6 +40,7 @@ namespace KeycloakAdapter
         public string UserUrl { get => _userUrl; }
         public string MetadataUrl { get => _metadaAddressUrl; }
 
+
         public IEnumerable<KeyValuePair<string, string>> GetHeaderSessionStart(string login, string password)
         {
             IEnumerable<KeyValuePair<string, string>> headerData = new List<KeyValuePair<string, string>>()
@@ -124,6 +125,32 @@ namespace KeycloakAdapter
             return statusCode;
         }
 
+        public async Task<int> TryDeleteUser(string jwt, User user)
+        {
+            int statusCode = default;
+
+            if (string.IsNullOrWhiteSpace(user.Id)) return 400;
+
+            try
+            {
+                string urlDeleteUser = $"{_userUrl}/{user.Id}";
+
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
+                HttpResponseMessage response = await httpClient.DeleteAsync(urlDeleteUser);
+                statusCode = (int)response.StatusCode;
+
+                string answer = await response.Content.ReadAsStringAsync();
+
+                OpenIdConnect openIdConnect = JsonConvert.DeserializeObject<OpenIdConnect>(answer);
+
+                if (openIdConnect != null && openIdConnect.HasError) answer = openIdConnect.error_description ?? openIdConnect.errorMessage;
+            }
+            catch (Exception)
+            { }
+
+            return statusCode;
+        }
 
         public async Task<int> TryAddRole(string jwt, User user, string roleName)
         {
@@ -210,7 +237,6 @@ namespace KeycloakAdapter
 
             return userJson.ToString();
         }
-
 
         public static string CreateUserDataUpdate(User user)
         {

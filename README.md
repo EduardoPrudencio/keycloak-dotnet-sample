@@ -47,6 +47,10 @@ As roles disponíveis irão aparecer na caixa Available Roles. Selecione a role 
 
 Pronto! A configuração do Keycloak foi finalizada.
 
+### Variáveis de ambiente
+No nosso exemple a url que aponta para a interface de admin do Keycloak é http://localhost:8080 por default, mas se você quiser passar esse valor
+por uma variável de ambiente, bem comum em containers docker, basta definir o endereço desejado para a variável  SECURITY_URL
+
 # Agora vamos configurar nosso projeto dotnet
 
 Vamos alterar o arquivo Startup.cs nos seguintes pontos:

@@ -64,13 +64,15 @@ namespace KeycloakTry2
 
             }).AddJwtBearer(o =>
             {
-                o.Authority = Configuration["keycloakData:UrlBase"] + Configuration["keycloakData:Authority"];
+                string urlBase = System.Environment.GetEnvironmentVariable("SECURITY_URL") ?? Configuration["keycloakData:UrlBase"];
+
+                o.Authority = urlBase + Configuration["keycloakData:Authority"];
                 o.Audience = Configuration["keycloakData:ClientId"];
                 o.SaveToken = false;
                 o.RequireHttpsMetadata = false;
                 o.IncludeErrorDetails = true;
                 o.RequireHttpsMetadata = false;
-                o.MetadataAddress = Configuration["keycloakData:UrlBase"] + Configuration["keycloakData:MetadataUrl"];
+                o.MetadataAddress = urlBase + Configuration["keycloakData:MetadataUrl"];
 
                 //o.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                 //{

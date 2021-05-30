@@ -22,16 +22,25 @@ namespace KeycloakAdapter
 
         public KeycloakManager(IConfiguration configutation)
         {
-            _baseAddress = configutation["keycloakData:UrlBase"];
-            _urlAddRoleToUser = _baseAddress + configutation["keycloakData:UrlAddRoleToUser"];
-            _metadaAddressUrl = _baseAddress + configutation["keycloakData:MetadataUrl"];
+            string urlEnvironment = Environment.GetEnvironmentVariable("SECURITY_URL");
+            string urlAddRoleToUser = Environment.GetEnvironmentVariable("ADDUSER_ROLE_URL");
+            string urlMetaData = Environment.GetEnvironmentVariable("METADATA_URL");
+            string urlSessionStart = Environment.GetEnvironmentVariable("SESSION_START_URL");
+            string urlUser = Environment.GetEnvironmentVariable("USER_URL");
+            string clientId = Environment.GetEnvironmentVariable("CLIENT_ID");
+            string clientSecret = Environment.GetEnvironmentVariable("CLIENT_SECRET");
+            string rolesConf = Environment.GetEnvironmentVariable("ROLES");
 
-            _initialAccessAddress = _baseAddress + configutation["keycloakData:SessionStartUrl"];
-            _clientId = configutation["keycloakData:ClientId"];
-            _clientSecret = configutation["keycloakData:ClientSecret"];
-            _userUrl = _baseAddress + configutation["keycloakData:UserUrl"];
 
-            _roles = System.Text.Json.JsonSerializer.Deserialize<Role[]>(configutation["keycloakData:Roles"]);
+            _baseAddress = urlEnvironment ?? configutation["keycloakData:UrlBase"];
+            _urlAddRoleToUser = _baseAddress + (urlAddRoleToUser ?? configutation["keycloakData:UrlAddRoleToUser"]);
+            _metadaAddressUrl = _baseAddress + (urlMetaData ?? configutation["keycloakData:MetadataUrl"]);
+            _initialAccessAddress = _baseAddress + (urlSessionStart ?? configutation["keycloakData:SessionStartUrl"]);
+            _userUrl = _baseAddress + (urlUser ?? configutation["keycloakData:UserUrl"]);
+
+            _clientId = clientId ?? configutation["keycloakData:ClientId"];
+            _clientSecret = clientSecret ?? configutation["keycloakData:ClientSecret"];
+            _roles = rolesConf != null ? System.Text.Json.JsonSerializer.Deserialize<Role[]>(rolesConf) : System.Text.Json.JsonSerializer.Deserialize<Role[]>(configutation["keycloakData:Roles"]);
         }
 
         public string InitialAccessAddress { get => _initialAccessAddress; }

@@ -51,6 +51,19 @@ Pronto! A configuração do Keycloak foi finalizada.
 No nosso exemple a url que aponta para a interface de admin do Keycloak é http://localhost:8080 por default, mas se você quiser passar esse valor
 por uma variável de ambiente, bem comum em containers docker, basta definir o endereço desejado para a variável  SECURITY_URL
 
+As opções para variáveis de ambiete são:
+
+DB-ADDRESS: 172.17.0.1
+KEYTOCREATETOKEN: admin-admin
+SECURITY_URL: http://172.17.0.1:8080/
+ADDUSER_ROLE_URL: auth/admin/realms/master/users/[USER_UUID]/role-mappings/clients/[CLIENT_UUID]
+METADATA_URL: auth/realms/master/.well-known/openid-configuration
+USER_URL: auth/admin/realms/master/users
+CLIENT_ID: admin-cli
+CLIENT_SECRET: 07d35c9a-410c-4b61-9137-afb7bef2f8e8
+ROLES: "[{\"id\":\"66f92784-1f53-4c4c-b1a3-cbc49337b8de\",\"name\":\"administrator\",\"composite\":false,\"clientRole\":true,\"containerId\":\"9e4c5cac-a281-4dcc-839f-6b5f3b364bc6\"},{\"id\":\"91177d54-d041-42f9-b573-e83d18a22dc0\",\"name\":\"user\",\"composite\":false,\"clientRole\":true,\"containerId\":\"9e4c5cac-a281-4dcc-839f-6b5f3b364bc6\"}]"
+
+
 # Agora vamos configurar nosso projeto dotnet
 
 Vamos alterar o arquivo Startup.cs nos seguintes pontos:

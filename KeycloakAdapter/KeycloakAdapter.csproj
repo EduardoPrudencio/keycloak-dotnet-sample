@@ -25,10 +25,4 @@
   <ItemGroup>
     <Folder Include="bin\Release\" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\keycloak-icon.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
 </Project>

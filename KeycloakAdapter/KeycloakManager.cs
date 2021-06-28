@@ -219,6 +219,42 @@ namespace KeycloakAdapter
             return responseSearch;
         }
 
+        public async Task<int> ResetPassword(string jwt, string email, string password)
+        {
+            using var httpClient = new HttpClient();
+            string url = $"{_userUrl}?email={email}";
+
+            httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
+
+            using var response = await httpClient.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                string answer = await response.Content.ReadAsStringAsync();
+
+                var userResponse = JsonConvert.DeserializeObject<List<User>>(answer);
+
+                var finalResponse = (userResponse.Any()) ? userResponse.FirstOrDefault(u => !string.IsNullOrEmpty(u.email)) : null;
+                if (finalResponse != null)
+                {
+                    var credentials = new Credentials
+                    {
+                        Value = password,
+                        Type = "password",
+                        Temporary = false
+                    };
+                    url = $"{_userUrl}/{finalResponse.Id}/reset-password";
+
+                    StringContent httpContent = new StringContent(JsonConvert.SerializeObject(credentials), Encoding.UTF8, "application/json");
+                    var result = await httpClient.PutAsync(url, httpContent);
+
+                    return (int)result.StatusCode;
+                }
+                else
+                    return 400;
+            }
+            return (int)response.StatusCode;
+        }
+
         public static OpenIdConnect GetAccessResult(string answer)
         {
             return JsonConvert.DeserializeObject<OpenIdConnect>(answer);

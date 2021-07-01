@@ -13,16 +13,15 @@ namespace KeycloakTry2.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        IConfiguration _configutation;
+        private IConfiguration _configutation;
 
-        KeycloakManager accessKeycloakData;
+        private KeycloakManager accessKeycloakData;
+
         public UserController(IConfiguration configutation)
         {
             accessKeycloakData = new KeycloakManager(configutation);
             _configutation = configutation;
         }
-
-
 
         [HttpGet]
         public IEnumerable<string> Get()
@@ -108,5 +107,27 @@ namespace KeycloakTry2.Controllers
             }
         }
 
+        [HttpPost]
+        [Authorize]
+        [Route("ResetPassword")]
+        public async Task<IActionResult> ResetPassword([FromBody] User accessUser)
+        {
+            IActionResult result;
+            string jwt = Request.Headers["Authorization"];
+            int statusCodeResult = accessKeycloakData.ResetPassword(jwt, accessUser.email, accessUser.password).Result;
+
+            if (statusCodeResult == 201)
+            {
+                HttpResponseObject<User> userCreated = accessKeycloakData.FindUserByEmail(jwt, accessUser.email).Result;
+                await accessKeycloakData.TryAddRole(jwt, userCreated.Object, "administrator");
+                result = Created(" ", userCreated.Object);
+            }
+            else
+            {
+                result = new StatusCodeResult(statusCodeResult);
+            }
+
+            return result;
+        }
     }
 }

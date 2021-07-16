@@ -18,6 +18,7 @@ namespace KeycloakAdapter
         private readonly string _clientSecret;
         private readonly string _userUrl;
         private readonly string _metadaAddressUrl;
+        private readonly string _getUsersWithRoleName;
         private readonly Role[] _roles;
 
         public KeycloakManager(IConfiguration configuration)
@@ -30,12 +31,13 @@ namespace KeycloakAdapter
             string clientId = Environment.GetEnvironmentVariable("CLIENT_ID");
             string clientSecret = Environment.GetEnvironmentVariable("CLIENT_SECRET");
             string rolesConf = Environment.GetEnvironmentVariable("ROLES");
-
+        
             _baseAddress = urlEnvironment ?? configuration["keycloakData:UrlBase"];
             _urlAddRoleToUser = _baseAddress + (urlAddRoleToUser ?? configuration["keycloakData:UrlAddRoleToUser"]);
             _metadaAddressUrl = _baseAddress + (urlMetaData ?? configuration["keycloakData:MetadataUrl"]);
             _initialAccessAddress = _baseAddress + (urlSessionStart ?? configuration["keycloakData:SessionStartUrl"]);
             _userUrl = _baseAddress + (urlUser ?? configuration["keycloakData:UserUrl"]);
+            _getUsersWithRoleName = _baseAddress + configuration["keycloakData:UrlAddRoleToUser"];
 
             _clientId = clientId ?? configuration["keycloakData:ClientId"];
             _clientSecret = clientSecret ?? configuration["keycloakData:ClientSecret"];
@@ -254,7 +256,63 @@ namespace KeycloakAdapter
             }
             return (int)response.StatusCode;
         }
+        public async Task<HttpResponseObject<User>> GetUsersByClientAndRoleName(string jwt, string roleName, int? first = null, int? max = null)
+        {
+            HttpResponseObject<User> responseSearch = new HttpResponseObject<User>();
+            List<User> userResponse;
+            var queryParams = new Dictionary<string, object>
+            {
+                [nameof(first)] = first,
+                [nameof(max)] = max
+            };
 
+            using var httpClient = new HttpClient();
+            string url = _getUsersWithRoleName.Replace("[role_name]", roleName);
+            httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
+            HttpResponseMessage response = await httpClient.GetAsync(url);
+
+            int statusCode = (int)response.StatusCode;
+            if (statusCode != 200)
+                return responseSearch;
+            string answer = await response.Content.ReadAsStringAsync();
+
+            userResponse = JsonConvert.DeserializeObject<List<User>>(answer);
+
+            User finalResponse = (userResponse.Any()) ? userResponse.FirstOrDefault(u => !string.IsNullOrEmpty(u.email)) : null;
+
+            responseSearch.Create(statusCode, finalResponse);
+
+            return responseSearch;
+        }
+
+        public async Task<int> TryRemoveRole(string jwt, User user, string roleName)
+        {
+            Role roleToAdd = this._roles.FirstOrDefault(r => r.name.Equals(roleName));
+
+            int statusCode = default;
+            var _roles = new Role[] { roleToAdd };
+            string listOfRole = JsonConvert.SerializeObject(_roles);
+
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("Authorization", jwt);
+
+            string url = _urlAddRoleToUser
+                .Replace("[USER_UUID]", user.Id)
+                .Replace("[CLIENT_UUID]", roleToAdd.containerId);
+
+            StringContent httpConent = new StringContent(listOfRole, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await httpClient.PostAsync(url, httpConent);
+            statusCode = (int)response.StatusCode;
+
+            string answer = await response.Content.ReadAsStringAsync();
+
+            OpenIdConnect openIdConnect = JsonConvert.DeserializeObject<OpenIdConnect>(answer);
+
+            if (openIdConnect != null && openIdConnect.HasError) answer = openIdConnect.error_description ?? openIdConnect.errorMessage;
+
+            return statusCode;
+        }
         public static OpenIdConnect GetAccessResult(string answer)
         {
             return JsonConvert.DeserializeObject<OpenIdConnect>(answer);

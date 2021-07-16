@@ -146,19 +146,20 @@ namespace KeycloakTry2
 
         private static void MapKeycloakRolesToRoleClaims(TokenValidatedContext context)
         {
-            var resourceAccess = JObject.Parse(context.Principal.FindFirst("resource_access").Value);            //var clientRoles = clientResource["roles"];
-            //var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
+            var resourceAccess = JObject.Parse(context.Principal.FindFirst("resource_access").Value);
+            var clientResource = resourceAccess[context.Principal.FindFirstValue("aud")];
+            var clientRoles = clientResource["roles"];
+            var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
 
-            //if (claimsIdentity == null)
-            //{
-            //    return;
-            //}
+            if (claimsIdentity == null)
+            {
+                return;
+            }
 
-            //foreach (var clientRole in clientRoles)
-            //{
-            //    claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, clientRole.ToString()));
-            //}
-          //  var clientResource = resourceAccess[context.Principal.FindFirstValue("aud")];
+            foreach (var clientRole in clientRoles)
+            {
+                claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, clientRole.ToString()));
+            }
 
         }
     }

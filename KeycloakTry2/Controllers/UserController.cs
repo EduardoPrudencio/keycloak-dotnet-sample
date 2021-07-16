@@ -129,5 +129,13 @@ namespace KeycloakTry2.Controllers
 
             return result;
         }
+        [HttpPost]
+        [Authorize]
+        [Route("GetUsersByRole")]
+        public async Task<HttpResponseObject<User>> GetUsersByRole([FromBody] string roleName)
+        {
+            string jwt = Request.Headers["Authorization"];
+            return await accessKeycloakData.GetUsersByClientAndRoleName(jwt, roleName);
+        }
     }
 }

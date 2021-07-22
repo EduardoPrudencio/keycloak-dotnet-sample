@@ -301,8 +301,13 @@ namespace KeycloakAdapter
                 .Replace("[CLIENT_UUID]", roleToAdd.containerId);
 
             StringContent httpConent = new StringContent(listOfRole, Encoding.UTF8, "application/json");
-
-            HttpResponseMessage response = await httpClient.PostAsync(url, httpConent);
+            HttpRequestMessage request = new HttpRequestMessage
+            {
+                Content = httpConent,
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri(url, UriKind.Relative)
+            };
+           var response = await httpClient.SendAsync(request);
             statusCode = (int)response.StatusCode;
 
             string answer = await response.Content.ReadAsStringAsync();
@@ -313,6 +318,7 @@ namespace KeycloakAdapter
 
             return statusCode;
         }
+
         public static OpenIdConnect GetAccessResult(string answer)
         {
             return JsonConvert.DeserializeObject<OpenIdConnect>(answer);

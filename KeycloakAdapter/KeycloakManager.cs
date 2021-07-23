@@ -161,9 +161,9 @@ namespace KeycloakAdapter
                 .Replace("[USER_UUID]", user.Id)
                 .Replace("[CLIENT_UUID]", roleToAdd.containerId);
 
-            StringContent httpConent = new StringContent(listOfRole, Encoding.UTF8, "application/json");
+            var httpContent = new StringContent(listOfRole, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage response = await httpClient.PostAsync(url, httpConent);
+            HttpResponseMessage response = await httpClient.PostAsync(url, httpContent);
             statusCode = (int)response.StatusCode;
 
             string answer = await response.Content.ReadAsStringAsync();

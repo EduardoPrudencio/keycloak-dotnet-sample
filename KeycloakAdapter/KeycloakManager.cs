@@ -256,9 +256,9 @@ namespace KeycloakAdapter
             }
             return (int)response.StatusCode;
         }
-        public async Task<HttpResponseObject<User>> GetUsersByClientAndRoleName(string jwt, string roleName, int? first = null, int? max = null)
+        public async Task<HttpResponseObject<List<User>>> GetUsersByClientAndRoleName(string jwt, string roleName, int? first = null, int? max = null)
         {
-            HttpResponseObject<User> responseSearch = new HttpResponseObject<User>();
+            HttpResponseObject<List<User>> responseSearch = new HttpResponseObject<List<User>>();
             List<User> userResponse;
             var queryParams = new Dictionary<string, object>
             {
@@ -278,7 +278,7 @@ namespace KeycloakAdapter
 
             userResponse = JsonConvert.DeserializeObject<List<User>>(answer);
 
-            User finalResponse = (userResponse.Any()) ? userResponse.FirstOrDefault(u => !string.IsNullOrEmpty(u.email)) : null;
+            List<User> finalResponse = userResponse.Any() ? userResponse.Where(u => !string.IsNullOrEmpty(u.email)).ToList() : null;
 
             responseSearch.Create(statusCode, finalResponse);
 

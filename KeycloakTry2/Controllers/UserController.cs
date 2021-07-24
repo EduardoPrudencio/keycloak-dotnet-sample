@@ -132,10 +132,32 @@ namespace KeycloakTry2.Controllers
         [HttpPost]
         [Authorize]
         [Route("GetUsersByRole")]
-        public async Task<HttpResponseObject<User>> GetUsersByRole([FromBody] string roleName)
+        public async Task<HttpResponseObject<List<User>>> GetUsersByRole([FromBody] string roleName)
         {
             string jwt = Request.Headers["Authorization"];
             return await accessKeycloakData.GetUsersByClientAndRoleName(jwt, roleName);
+        }
+        [HttpPost]
+        [Authorize]
+        [Route("AddRoleByEmail")]
+        public async Task<IActionResult> AddRoleByEmail([FromBody] string email)
+        {
+            IActionResult result = default;
+            string jwt = Request.Headers["Authorization"];
+            HttpResponseObject<User> usr = accessKeycloakData.FindUserByEmail(jwt, email).Result;
+            await accessKeycloakData.TryAddRole(jwt, usr.Object, "Test");
+            return result;
+        }
+        [HttpPost]
+        [Authorize]
+        [Route("RemoveRoleByEmail")]
+        public async Task<IActionResult> RemoveRoleByEmail([FromBody]  string email)
+        {
+            IActionResult result = default;
+            string jwt = Request.Headers["Authorization"];
+            HttpResponseObject<User> usr = accessKeycloakData.FindUserByEmail(jwt, email).Result;
+            await accessKeycloakData.TryRemoveRole(jwt, usr.Object, "Test");
+            return result;
         }
     }
 }

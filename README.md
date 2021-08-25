@@ -2,7 +2,7 @@
 # keycloak.Adapter
 
 Link do projeto no Nuget:
-https://www.nuget.org/packages/KeycloakAdapter/2.2.0
+https://www.nuget.org/packages/KeycloakAdapter/2.4.1
 
 Depois de muito tempo procurando algo que me permitisse integrar diretamente com o Keycloak sem obter sucesso, decidi investir um pouco mais nos meus estudos e 
 cheguei nesse projeto que agora compartilho com mais quem achar que pode ser ajudado por ele.

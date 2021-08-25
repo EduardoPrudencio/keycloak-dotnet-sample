@@ -31,7 +31,7 @@ namespace KeycloakAdapter
             string clientId = Environment.GetEnvironmentVariable("CLIENT_ID");
             string clientSecret = Environment.GetEnvironmentVariable("CLIENT_SECRET");
             string rolesConf = Environment.GetEnvironmentVariable("ROLES");
-        
+
             _baseAddress = urlEnvironment ?? configuration["keycloakData:UrlBase"];
             _urlAddRoleToUser = _baseAddress + (urlAddRoleToUser ?? configuration["keycloakData:UrlAddRoleToUser"]);
             _metadaAddressUrl = _baseAddress + (urlMetaData ?? configuration["keycloakData:MetadataUrl"]);
@@ -64,10 +64,37 @@ namespace KeycloakAdapter
             return headerData;
         }
 
+        public IEnumerable<KeyValuePair<string, string>> GetHeaderSessionStart(string refreshToken)
+        {
+            IEnumerable<KeyValuePair<string, string>> headerData = new List<KeyValuePair<string, string>>()
+            {
+                new KeyValuePair<string, string>("refresh_token", refreshToken),
+                new KeyValuePair<string, string>("client_id", _clientId),
+                new KeyValuePair<string, string>("grant_type", "refresh_token"),
+                new KeyValuePair<string, string>("client_secret", _clientSecret),
+            };
+
+            return headerData;
+        }
+
         public async Task<OpenIdConnect> TryLoginExecute(string login, string password)
         {
             using var httpClient = new HttpClient();
             using var content = new FormUrlEncodedContent(GetHeaderSessionStart(login, password));
+
+            content.Headers.Clear();
+            content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
+
+            HttpResponseMessage response = await httpClient.PostAsync(_initialAccessAddress, content);
+            string answer = await response.Content.ReadAsStringAsync();
+
+            return GetAccessResult(answer);
+        }
+
+        public async Task<OpenIdConnect> TryLoginExecute(string refreshToken)
+        {
+            using var httpClient = new HttpClient();
+            using var content = new FormUrlEncodedContent(GetHeaderSessionStart(refreshToken));
 
             content.Headers.Clear();
             content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
@@ -301,13 +328,16 @@ namespace KeycloakAdapter
                 .Replace("[CLIENT_UUID]", roleToAdd.containerId);
 
             StringContent httpConent = new StringContent(listOfRole, Encoding.UTF8, "application/json");
+
             HttpRequestMessage request = new HttpRequestMessage
             {
                 Content = httpConent,
                 Method = HttpMethod.Delete,
                 RequestUri = new Uri(url, UriKind.Relative)
             };
-           var response = await httpClient.SendAsync(request);
+
+            var response = await httpClient.SendAsync(request);
+
             statusCode = (int)response.StatusCode;
 
             string answer = await response.Content.ReadAsStringAsync();

@@ -37,5 +37,21 @@ namespace KeycloakTry2.Controllers
 
             return Task.FromResult(answer);
         }
+
+        [HttpPost("ByRefreshToken")]
+        public Task<string> Post(string refreshToken)
+        {
+            string answer = string.Empty;
+
+            KeycloakManager accessKeycloakData = new KeycloakManager(_configutation);
+
+            OpenIdConnect openIdConnect = accessKeycloakData.TryLoginExecute(refreshToken).Result;
+
+            if (openIdConnect.HasError) answer = openIdConnect.error_description;
+
+            else answer = JsonConvert.SerializeObject(openIdConnect);
+
+            return Task.FromResult(answer);
+        }
     }
 }
